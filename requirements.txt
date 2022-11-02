@@ -1,0 +1,7 @@
+argparse
+asyncio
+flask
+flask_cors
+json2html
+requests
+simplejson
