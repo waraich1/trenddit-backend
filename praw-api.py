@@ -1,4 +1,5 @@
 import praw
+from os import environ
 
 # reddit = praw.Reddit(
 #     client_id="_cYY9dLkaIUy6I-p_yzXgw",
@@ -7,12 +8,12 @@ import praw
 # )
 
 reddit = praw.Reddit(
-    client_id="_cYY9dLkaIUy6I-p_yzXgw",
-    client_secret="hO6SAqvDBRu7rIyei6C9uE-JscMPtA",
+    client_id=environ.get('Client_id'),
+    client_secret=environ.get('seceret_id'),
     user_agent="Trenddit/0.0.2",
     refresh_token="2350269160941-a5OpOSu7rTd4TTVmIKDAtO2zQPcSag",
-    password="Harkanwar@6762",
-    username="trenddit-dev",
+    password=environ.get('user_id'),
+    username=environ.get('password'),
 )
 
 print(reddit.read_only)
