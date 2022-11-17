@@ -127,7 +127,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-firebase_tools/trenddit-db-cred.py
+firebase_tools/trenddit-db-cred.json
 tokens.txt
 
 .DS_Store
