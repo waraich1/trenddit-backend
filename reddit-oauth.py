@@ -1,12 +1,17 @@
 import requests
 from os import environ
 # note that CLIENT_ID refers to 'personal use script' and SECRET_TOKEN to 'token'
-auth = requests.auth.HTTPBasicAuth('-jZtWxCPaO8z8h_fmhfhhw', 'DEzwCKBY-LjaMKrLCHHdkrGsc-HvCA')
+auth = requests.auth.HTTPBasicAuth(environ.get('CLIENT_ID'), environ.get('SECRET_ID'))
+
+print(environ.get('CLIENT_ID'))
+
 
 # here we pass our login method (password), username, and password
 data = {'grant_type': 'password',
-        'username': environ.get('user_id'),
-        'password': environ.get('password')}
+        'username': environ.get('USER_ID'),
+        'password': environ.get('PASSWORD')}
+
+
 
 
 # setup our header info, which gives reddit a brief description of our app

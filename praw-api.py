@@ -1,20 +1,18 @@
 import praw
 from os import environ
 
-# reddit = praw.Reddit(
-#     client_id="_cYY9dLkaIUy6I-p_yzXgw",
-#     client_secret="hO6SAqvDBRu7rIyei6C9uE-JscMPtA",
-#     user_agent="Trenddit/0.0.1",
-# )
+
 
 reddit = praw.Reddit(
-    client_id=environ.get('Client_id'),
-    client_secret=environ.get('seceret_id'),
+    client_id=environ.get('CLIENT_ID'),
+    client_secret=environ.get('SECRET_ID'),
     user_agent="Trenddit/0.0.2",
-    refresh_token="2350269160941-a5OpOSu7rTd4TTVmIKDAtO2zQPcSag",
-    password=environ.get('user_id'),
-    username=environ.get('password'),
+    refresh_token='2350269160941-tBMkp2mTTMS_UUidLWbSwazOXzP4CA',
+    username=environ.get('USER_ID'),
+    password=environ.get('PASSWORD'),
 )
+
+
 
 print(reddit.read_only)
 reddit.read_only = True
@@ -25,4 +23,7 @@ print(subreddit.display_name)
 # Output: redditdev
 print(subreddit.title)
 # Output: reddit development
-print(subreddit.description)
+# print(subreddit.description)
+
+for submission in reddit.subreddit("canada").hot(limit=10):
+    print(submission.title)

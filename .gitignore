@@ -131,3 +131,4 @@ firebase_tools/trenddit-db-cred.json
 tokens.txt
 
 .DS_Store
+run.sh
