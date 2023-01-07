@@ -15,7 +15,7 @@ data = {'grant_type': 'password',
 
 
 # setup our header info, which gives reddit a brief description of our app
-headers = {'User-Agent': 'Trenddit/0.0.1'}
+headers = {'User-Agent': 'Trenddit/0.0.2'}
 
 # send our request for an OAuth token
 res = requests.post('https://www.reddit.com/api/v1/access_token',
