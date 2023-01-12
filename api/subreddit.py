@@ -23,11 +23,9 @@ def subreddit_get_posts():
 @subreddit_routes.route("/subreddit_comments", methods = ['GET'])
 def subreddit_get_comments():
   sub = SubredditF()
-  res = sub.get_hot_comments('Canada',20)
+  res = sub.get_hot_comments('india',50)
   response = jsonify(
     authError=True,
-    data={
-      'data': res
-    }
+    data=res
   )
   return response
