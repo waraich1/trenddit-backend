@@ -8,13 +8,13 @@ import json
 
 
 class TrendsF:
-    def __init__(self) -> None:
+    def __init__(self, token) -> None:
 
         self.reddit = praw.Reddit(
             client_id=environ.get("CLIENT_ID"),
             client_secret=environ.get("SECRET_ID"),
             user_agent="Trenddit/0.0.2",
-            refresh_token="2350269160941-m9wnXhIPS6HWt0ffkEpe4KxjOjou6A",
+            refresh_token=token,
             username=environ.get("USER_ID"),
             password=environ.get("PASSWORD"),
         )
