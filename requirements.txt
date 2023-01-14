@@ -11,7 +11,7 @@ Flask
 Flask-Cors
 gcloud
 google-api-core
-google-api-python-clint
+google-api-python-client
 google-auth
 google-auth-httplib2
 google-cloud-core
