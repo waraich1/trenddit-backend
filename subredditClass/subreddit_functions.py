@@ -3,7 +3,6 @@ from flask import redirect
 import praw
 from os import environ
 from praw.models import MoreComments
-import subredditClass.comment as comment
 import asyncio
 import httpx
 
