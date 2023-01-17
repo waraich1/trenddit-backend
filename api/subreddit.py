@@ -15,7 +15,7 @@ subreddit_routes = Blueprint("subreddit", __name__)
 def subreddit_get_posts():
     token = FirebaseC().get_token()
     sub = SubredditF(token)
-    res = sub.get_hot_posts("Canada", 20)
+    res = sub.get_hot_posts("Canada", 100)
     response = jsonify(authError=True, data={"data": res})
     return response
 

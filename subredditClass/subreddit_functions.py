@@ -5,6 +5,8 @@ from os import environ
 from praw.models import MoreComments
 import asyncio
 import httpx
+from datetime import datetime
+from collections import Counter
 
 
 class SubredditF:
@@ -23,10 +25,29 @@ class SubredditF:
 
     def get_hot_posts(self, subredditName, num):
         res = []
-        subreddit = self.reddit.subreddit(subredditName)
+        result = []
+        subreddit = self.reddit.subreddit("canada")
         for submission in subreddit.hot(limit=num):
-            res.append(submission.title)
-        return res
+            date = self.get_date(submission.created_utc)
+            res.append({
+                "title": submission.title,
+                "date": str(date.day) + "/" + str(date.month) + "/" + str(date.year),
+                "author": str(submission.author),
+                "nsfw": submission.over_18,
+                "upvote_ratio": submission.upvote_ratio
+
+            })
+            # res.append(submission.title)
+        
+        date_counter = Counter(item["date"] for item in res)
+        result.append({"date-freq" : dict(date_counter)})
+        authour_counter = Counter(item["author"] for item in res)
+        result.append({"auth-freq" : dict(authour_counter)})
+        nsfw_counter = Counter(item["nsfw"] for item in res)
+        result.append({"nsfw-freq" : dict(nsfw_counter)})
+        upvote_counter = Counter(item["upvote_ratio"] for item in res)
+        result.append({"upvote-freq" : dict(upvote_counter)})
+        return result
 
     def get_hot_comments(self, subredditName, num):
         res = []
@@ -70,3 +91,9 @@ class SubredditF:
                 if "body" in comment[i]["data"] and comment[i]["data"]["body"] != "[deleted]":
                     result.append(comment[i]["data"]["body"])
         return result
+
+    def get_date(self,date):
+        converted_date = datetime.fromtimestamp(date)
+        res = converted_date
+        return res
+
