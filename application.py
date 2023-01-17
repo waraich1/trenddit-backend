@@ -1,7 +1,6 @@
 import argparse
 from ast import arguments
 import logging
-from click import argument
 
 from flask_cors import CORS
 from flask import Flask, request, session, abort, jsonify, Blueprint
