@@ -81,7 +81,7 @@ class SubredditF:
         text_result = self.get_freq(result['text'])
         author_freq = dict(Counter(result["author-freq"]).most_common(15))
 
-        return {"1": text_result,"2": author_freq}
+        return {"text": text_result,"author": author_freq}
 
     def make_url(self, id, sort, threaded):
         return f"http://oauth.reddit.com/comments/{id}?sort={sort}&threaded={threaded}"

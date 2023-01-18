@@ -24,7 +24,7 @@ class TrendsF:
     def get_trend_posts(self, subreddit, query):
         list = []
         for submission in self.reddit.subreddit(subreddit).search(
-            query, sort="relevance", time_filter="month"
+            query, sort="top", time_filter="month"
         ):
 
             res_object = {
