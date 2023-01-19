@@ -17,7 +17,9 @@ trends_routes = Blueprint("trends", __name__)
 async def subreddit_get_posts():
     token = FirebaseC().get_token()
     sub = TrendsF(token)
-    res = await sub.get_result(["canada","ukraine","australia"], ["War","Russia","Inflation","Immigration"])
+    res = await sub.get_result(
+        ["canada", "ukraine", "australia"],
+        ["War", "Russia", "Inflation", "Immigration"],
+    )
     response = jsonify(authError=False, data={"data": res})
     return response
-

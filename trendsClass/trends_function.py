@@ -15,6 +15,7 @@ import json
 from aiohttp import ClientSession
 import itertools
 
+
 class TrendsF:
     def __init__(self, token) -> None:
 
@@ -29,17 +30,14 @@ class TrendsF:
         self.token = token
         self.reddit.read_only = True
         self.session = ClientSession()
-    
+
     def __aiter__(self):
         return self.__wrapped__.__aiter__()
 
-    
     async def get_trend_posts(self, subredditName, query):
         result = []
         subreddit = await self.reddit.subreddit(subredditName)
-        async for submission in subreddit.search(
-            query, sort="hot", time_filter="year"
-        ):
+        async for submission in subreddit.search(query, sort="hot", time_filter="year"):
             date = self.get_date(submission.created_utc)
             res_object = {
                 "author": str(submission.author),
@@ -52,23 +50,23 @@ class TrendsF:
                 "subreddit": subredditName,
             }
             result.append(res_object)
-        
+
         return result
-    
-    async def get_result(self,subreddits,keywords):
+
+    async def get_result(self, subreddits, keywords):
         arguments = []
         for i in subreddits:
             for j in keywords:
-                arguments.append((i,j))
-        
-        result = await asyncio.gather(*[self.get_trend_posts(x,y) for x,y in arguments])
+                arguments.append((i, j))
+
+        result = await asyncio.gather(
+            *[self.get_trend_posts(x, y) for x, y in arguments]
+        )
         await self.reddit.close()
         await self.session.close()
         return list(itertools.chain(*result))
 
-    def get_date(self,date):
+    def get_date(self, date):
         converted_date = datetime.fromtimestamp(date)
         res = converted_date
         return res
-    
-    
