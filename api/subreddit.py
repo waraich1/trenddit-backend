@@ -25,6 +25,6 @@ async def subreddit_get_posts():
 async def subreddit_get_comments():
     token = FirebaseC().get_token()
     sub = SubredditF(token)
-    res = await sub.get_hot_comments("indiaspeaks", 50)
+    res = await sub.get_hot_comments("pakistan", 50)
     response = jsonify(authError=True, data=res)
     return response

@@ -28,6 +28,9 @@ class SubredditF:
         self.token = token
         self.reddit.read_only = True
         self.session = ClientSession()
+    
+    def __aiter__(self):
+        return self.__wrapped__.__aiter__()
 
     async def get_hot_posts(self, subredditName, num):
         res = []
@@ -58,6 +61,27 @@ class SubredditF:
         await self.reddit.close()
         return result
 
+    async def get_trend_posts(self, subredditName, query):
+        result = []
+        subreddit = await self.reddit.subreddit(subredditName)
+        async for submission in subreddit.search(
+            query, sort="hot", time_filter="year"
+        ):
+            date = self.get_date(submission.created_utc)
+            res_object = {
+                "author": str(submission.author),
+                "date": str(date.day) + "/" + str(date.month) + "/" + str(date.year),
+                "id": submission.id,
+                "name": submission.name,
+                "over_18": submission.over_18,
+                "num_commenta": submission.num_comments,
+                "upvote_ratio": submission.upvote_ratio,
+                "subreddit": subredditName,
+            }
+            result.append(res_object)
+        await self.reddit.close()
+        await self.session.close()
+        return result
 
     async def get_hot_comments(self, subredditName, num):
         res = []
@@ -121,6 +145,7 @@ class SubredditF:
                                     follow_redirects=True) for url in res]
                 result = await asyncio.gather(*tasks)
                 await self.reddit.close()
+                await self.session.close()
                 return result
 
 
