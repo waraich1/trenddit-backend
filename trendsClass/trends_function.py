@@ -1,16 +1,25 @@
-from turtle import pos
+from ast import Return
+from itertools import tee
 from flask import redirect
-import praw
+import asyncpraw
 from os import environ
 from praw.models import MoreComments
-import datetime as dt  # library for date management
+import asyncio
+import httpx
+from datetime import datetime
+from collections import Counter
+import re
+import spacy
+import en_core_web_sm
 import json
+from aiohttp import ClientSession
+import itertools
 
 
 class TrendsF:
     def __init__(self, token) -> None:
 
-        self.reddit = praw.Reddit(
+        self.reddit = asyncpraw.Reddit(
             client_id=environ.get("CLIENT_ID"),
             client_secret=environ.get("SECRET_ID"),
             user_agent="Trenddit/0.0.2",
@@ -18,23 +27,46 @@ class TrendsF:
             username=environ.get("USER_ID"),
             password=environ.get("PASSWORD"),
         )
-
+        self.token = token
         self.reddit.read_only = True
+        self.session = ClientSession()
 
-    def get_trend_posts(self, subreddit, query):
-        list = []
-        for submission in self.reddit.subreddit(subreddit).search(
-            query, sort="relevance", time_filter="month"
-        ):
+    def __aiter__(self):
+        return self.__wrapped__.__aiter__()
 
+    async def get_trend_posts(self, subredditName, query):
+        result = []
+        subreddit = await self.reddit.subreddit(subredditName)
+        async for submission in subreddit.search(query, sort="hot", time_filter="year"):
+            date = self.get_date(submission.created_utc)
             res_object = {
                 "author": str(submission.author),
-                "created_utc": submission.created_utc,
+                "date": str(date.day) + "/" + str(date.month) + "/" + str(date.year),
                 "id": submission.id,
                 "name": submission.name,
                 "over_18": submission.over_18,
                 "num_commenta": submission.num_comments,
                 "upvote_ratio": submission.upvote_ratio,
+                "subreddit": subredditName,
             }
-            list.append((res_object))
-        return list
+            result.append(res_object)
+
+        return result
+
+    async def get_result(self, subreddits, keywords):
+        arguments = []
+        for i in subreddits:
+            for j in keywords:
+                arguments.append((i, j))
+
+        result = await asyncio.gather(
+            *[self.get_trend_posts(x, y) for x, y in arguments]
+        )
+        await self.reddit.close()
+        await self.session.close()
+        return list(itertools.chain(*result))
+
+    def get_date(self, date):
+        converted_date = datetime.fromtimestamp(date)
+        res = converted_date
+        return res
