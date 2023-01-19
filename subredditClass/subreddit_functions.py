@@ -58,31 +58,11 @@ class SubredditF:
         upvote_counter = Counter(item["upvote_ratio"] for item in res)
         result.append({"upvote-freq" : dict(upvote_counter)})
         result.append({"trend-freq": self.get_freq(text)})
-        await self.reddit.close()
-        return result
-
-    async def get_trend_posts(self, subredditName, query):
-        result = []
-        subreddit = await self.reddit.subreddit(subredditName)
-        async for submission in subreddit.search(
-            query, sort="hot", time_filter="year"
-        ):
-            date = self.get_date(submission.created_utc)
-            res_object = {
-                "author": str(submission.author),
-                "date": str(date.day) + "/" + str(date.month) + "/" + str(date.year),
-                "id": submission.id,
-                "name": submission.name,
-                "over_18": submission.over_18,
-                "num_commenta": submission.num_comments,
-                "upvote_ratio": submission.upvote_ratio,
-                "subreddit": subredditName,
-            }
-            result.append(res_object)
-        await self.reddit.close()
         await self.session.close()
+        await self.reddit.close()
         return result
 
+    
     async def get_hot_comments(self, subredditName, num):
         res = []
         uuids = []
