@@ -48,6 +48,7 @@ class TrendsF:
                 "num_commenta": submission.num_comments,
                 "upvote_ratio": submission.upvote_ratio,
                 "subreddit": subredditName,
+                "query": query,
             }
             result.append(res_object)
 

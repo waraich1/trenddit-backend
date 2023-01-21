@@ -67,7 +67,7 @@ class SubredditF:
         result.append({"nsfw-freq": dict(nsfw_counter)})
         upvote_counter = Counter(item["upvote_ratio"] for item in res)
         result.append({"upvote-freq": dict(upvote_counter)})
-        result.append({"trend-freq": self.get_freq(text_list)})
+        result.append({"trend-freq": await self.get_freq(text_list)})
         await self.session.close()
         await self.reddit.close()
         return result
