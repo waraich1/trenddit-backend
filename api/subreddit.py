@@ -16,7 +16,7 @@ subreddit_routes = Blueprint("subreddit", __name__)
 async def subreddit_get_posts():
     token = FirebaseC().get_token()
     sub = SubredditF(token)
-    res = await (sub.get_hot_posts("Canada", 100))
+    res = await sub.get_hot_posts("Canada", 100)
     response = jsonify(authError=True, data={"data": res})
     return response
 
@@ -25,6 +25,6 @@ async def subreddit_get_posts():
 async def subreddit_get_comments():
     token = FirebaseC().get_token()
     sub = SubredditF(token)
-    res = await sub.get_hot_comments("pakistan", 50)
+    res = await sub.get_hot_comments("canada", 100)
     response = jsonify(authError=True, data=res)
     return response

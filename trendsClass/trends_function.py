@@ -10,7 +10,7 @@ from datetime import datetime
 from collections import Counter
 import re
 import spacy
-import en_core_web_sm
+import xx_ent_wiki_sm
 import json
 from aiohttp import ClientSession
 import itertools
