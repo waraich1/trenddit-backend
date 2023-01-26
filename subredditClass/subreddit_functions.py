@@ -35,7 +35,7 @@ class SubredditF:
 
     async def get_hot_posts(self, subredditName, num):
         res = []
-        result = []
+        result = dict()
         text = ""
         subreddit = await self.reddit.subreddit(subredditName)
         async for submission in subreddit.hot(limit=num):
@@ -52,19 +52,27 @@ class SubredditF:
                     "author": str(submission.author),
                     "nsfw": submission.over_18,
                     "upvote_ratio": submission.upvote_ratio,
+                    "score": submission.score
                 }
             )
             without_escape = re.sub("[^A-Za-z0-9]+", " ", submission.title)
             text = text + " " + without_escape
+        author_score = dict()
         date_counter = Counter(item["date"] for item in res)
-        result.append({"date-freq": dict(date_counter)})
-        authour_counter = Counter(item["author"] for item in res).most_common(15)
-        result.append({"auth-freq": dict(authour_counter)})
+        result['date_freq'] = dict(date_counter)
+        author_counter = Counter(item["author"] for item in res).most_common(15)
+        for item in res:
+            author_score[item["author"]] = (
+                author_score.get(item["author"], 0) + (item['score'])
+            )
+        author_score = Counter(author_score).most_common(15)
+        result['auth_freq'] = dict(author_counter)
         nsfw_counter = Counter(item["nsfw"] for item in res)
-        result.append({"nsfw-freq": dict(nsfw_counter)})
+        result['nsfw_freq'] = dict(nsfw_counter)
         upvote_counter = Counter(item["upvote_ratio"] for item in res)
-        result.append({"upvote-freq": dict(upvote_counter)})
-        result.append({"trend-freq": self.get_freq(text)})
+        result['upvote_freq'] = dict(upvote_counter)
+        result['trend_freq'] = self.get_freq(text)
+        result['author_score'] = dict(author_score)
         await self.session.close()
         await self.reddit.close()
         return result
@@ -89,16 +97,19 @@ class SubredditF:
         result = self.convert_hot_comment_result(res)
         await self.reddit.close()
         text_result = self.get_freq(result["text"])
-        author_freq = dict(Counter(result["author-freq"]).most_common(15))
+        author_comm_freq = dict(Counter(result["author_comm_freq"]).most_common(15))
+        author_score = dict(Counter(result["author_score"]).most_common(15))
 
-        return {"text": text_result, "author": author_freq}
+        return {"text": text_result, "author_by_comments": author_comm_freq, "author_by_score": author_score}
 
     def make_url(self, id, sort, threaded):
         return f"http://oauth.reddit.com/comments/{id}?sort={sort}&threaded={threaded}"
 
     def convert_hot_comment_result(self, res):
         text = " "
-        authors = dict()
+        authors_by_comments = dict()
+        authors_by_score = dict()
+        # print(res[0].json())
         for i in res:
             data = i.json()
             res = data[1]["data"]["children"]
@@ -115,11 +126,15 @@ class SubredditF:
                         flags=re.MULTILINE,
                     )
                     without_escape = re.sub("[^A-Za-z0-9]+", " ", without_url)
-                    authors[comment[i]["data"]["author"]] = (
-                        authors.get(comment[i]["data"]["author"], 0) + 1
+                    author_name = comment[i]["data"]["author"]
+                    authors_by_comments[author_name] = (
+                        authors_by_comments.get(author_name, 0) + 1
+                    )
+                    authors_by_score[author_name] = (
+                        authors_by_score.get(author_name, 0) + (comment[i]['data']['score'])
                     )
                     text = text + " " + without_escape
-        return {"text": text, "author-freq": authors}
+        return {"text": text, "author_comm_freq": authors_by_comments, "author_score": authors_by_score}
 
     def get_date(self, date):
         converted_date = datetime.fromtimestamp(date)
@@ -135,7 +150,7 @@ class SubredditF:
             for token in docx
             if token.is_stop != True and token.is_punct != True and token.pos_ == "NOUN"
         ]
-        freq = Counter(nouns).most_common(20)
+        freq = Counter(nouns).most_common(200)
         res = dict(freq)
         return res
 
