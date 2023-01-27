@@ -17,7 +17,7 @@ async def subreddit_get_posts():
     token = FirebaseC().get_token()
     sub = SubredditF(token)
     res = await (sub.get_hot_posts("Canada", 100))
-    response = jsonify(authError=True, data={"data": res})
+    response = jsonify(authError=True, data=res)
     return response
 
 
