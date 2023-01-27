@@ -13,6 +13,9 @@ import spacy
 import en_core_web_sm
 import json
 from aiohttp import ClientSession
+from os import cpu_count
+import time
+import itertools
 
 
 class SubredditF:
@@ -36,7 +39,7 @@ class SubredditF:
     async def get_hot_posts(self, subredditName, num):
         res = []
         result = []
-        text = ""
+        text_list = []
         subreddit = await self.reddit.subreddit(subredditName)
         async for submission in subreddit.hot(limit=num):
             # date = self.get_date(submission.created_utc)
@@ -52,19 +55,20 @@ class SubredditF:
                     "author": str(submission.author),
                     "nsfw": submission.over_18,
                     "upvote_ratio": submission.upvote_ratio,
+                    "hour_created": date.hour,
                 }
             )
             without_escape = re.sub("[^A-Za-z0-9]+", " ", submission.title)
-            text = text + " " + without_escape
-        date_counter = Counter(item["date"] for item in res)
-        result.append({"date-freq": dict(date_counter)})
+            text_list.append(without_escape)
+        hour_counter = Counter(item["hour_created"] for item in res)
+        result.append({"hour-freq": dict(hour_counter)})
         authour_counter = Counter(item["author"] for item in res).most_common(15)
         result.append({"auth-freq": dict(authour_counter)})
         nsfw_counter = Counter(item["nsfw"] for item in res)
         result.append({"nsfw-freq": dict(nsfw_counter)})
         upvote_counter = Counter(item["upvote_ratio"] for item in res)
         result.append({"upvote-freq": dict(upvote_counter)})
-        result.append({"trend-freq": self.get_freq(text)})
+        result.append({"trend-freq": await self.get_freq(text_list)})
         await self.session.close()
         await self.reddit.close()
         return result
@@ -86,24 +90,32 @@ class SubredditF:
             res.append(url)
 
         res = await self.do_tasks(res, headers)
-        result = self.convert_hot_comment_result(res)
+        result = await self.convert_hot_comment_result(res)
         await self.reddit.close()
-        text_result = self.get_freq(result["text"])
+        text_result = result["text"]
         author_freq = dict(Counter(result["author-freq"]).most_common(15))
 
-        return {"text": text_result, "author": author_freq}
+        return {
+            "text": text_result,
+            "author": author_freq,
+            "hour_freq": result["hour_freq"],
+        }
 
     def make_url(self, id, sort, threaded):
         return f"http://oauth.reddit.com/comments/{id}?sort={sort}&threaded={threaded}"
 
-    def convert_hot_comment_result(self, res):
-        text = " "
+    async def convert_hot_comment_result(self, res):
+        text = []
         authors = dict()
+        hour_freq = dict()
         for i in res:
             data = i.json()
             res = data[1]["data"]["children"]
             comment = data[1]["data"]["children"]
             for i in range(len(comment)):
+                if "created_utc" in comment[i]["data"]:
+                    hour_created = self.get_date(comment[i]["data"]["created_utc"]).hour
+                    hour_freq[hour_created] = hour_freq.get(hour_created, 0) + 1
                 if (
                     "body" in comment[i]["data"]
                     and comment[i]["data"]["body"] != "[deleted]"
@@ -118,26 +130,36 @@ class SubredditF:
                     authors[comment[i]["data"]["author"]] = (
                         authors.get(comment[i]["data"]["author"], 0) + 1
                     )
-                    text = text + " " + without_escape
-        return {"text": text, "author-freq": authors}
+                    text.append(without_escape)
+        res = await self.get_freq(text)
+        return {"text": res, "author-freq": authors, "hour_freq": hour_freq}
 
     def get_date(self, date):
         converted_date = datetime.fromtimestamp(date)
         res = converted_date
         return res
 
-    def get_freq(self, text):
+    async def get_freq(self, text):
+
         nlp = en_core_web_sm.load()
-        # nlp.max_length = len(text)
-        docx = nlp(text)
-        nouns = [
-            token.text
-            for token in docx
-            if token.is_stop != True and token.is_punct != True and token.pos_ == "NOUN"
-        ]
-        freq = Counter(nouns).most_common(20)
+        docx = list(nlp.pipe(text, n_process=cpu_count() - 1))
+        result = await asyncio.gather(*[self.getNouns(doc) for doc in docx])
+        final_result = list(itertools.chain(*result))
+        freq = Counter(final_result).most_common(20)
         res = dict(freq)
+
         return res
+
+    async def getNouns(slef, doc):
+        nouns = []
+        for token in doc:
+            if (
+                token.is_stop != True
+                and token.is_punct != True
+                and token.pos_ == "NOUN"
+            ):
+                nouns.append(token.text)
+        return nouns
 
     async def do_tasks(self, res, headers):
         async with httpx.AsyncClient() as client:

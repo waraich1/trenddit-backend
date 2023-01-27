@@ -21,7 +21,7 @@ import requests
 class AuthorF:
     def __init__(self, token) -> None:
 
-        self.reddit = praw.Reddit(
+        self.reddit = asyncpraw.Reddit(
             client_id=environ.get("CLIENT_ID"),
             client_secret=environ.get("SECRET_ID"),
             user_agent="Trenddit/0.0.2",
@@ -29,16 +29,17 @@ class AuthorF:
             username=environ.get("USER_ID"),
             password=environ.get("PASSWORD"),
         )
-        self.user = self.reddit.redditor("tog__life")
+
         self.username = "tog__life"
         self.token = token
         self.reddit.read_only = True
-        # self.session = ClientSession()
+        self.session = ClientSession()
 
-    # def __aiter__(self):
-    #     return self.__wrapped__.__aiter__()
+    def __aiter__(self):
+        return self.__wrapped__.__aiter__()
 
-    def get_author_details(self):
+    async def get_author_details(self):
+        user = await self.reddit.redditor("tog__life", fetch=True)
         auth = requests.auth.HTTPBasicAuth(
             environ.get("CLIENT_ID"), environ.get("SECRET_ID")
         )
@@ -50,8 +51,8 @@ class AuthorF:
         }
         # setup our header info, which gives reddit a brief description of our app
         headers = {"User-Agent": "Trenddit/0.0.2"}
-        comment_karma = self.user.comment_karma
-        post_karma = self.user.link_karma
+        comment_karma = user.comment_karma
+        post_karma = user.link_karma
         least_popular_post = {"score": float("inf")}
         most_popular_post = {"score": float("-inf")}
         least_popular_comment = {"score": float("inf")}
@@ -65,14 +66,14 @@ class AuthorF:
         res = total_karma_req.json()
         total_karma = res["data"]["total_karma"]
 
-        submissions = self.user.submissions.new(limit=None)
-        comments = self.user.comments.new(limit=None)
+        submissions = user.submissions.new(limit=None)
+        comments = user.comments.new(limit=None)
         post_details = dict()
         comment_details = dict()
         total_comments = 0
         total_posts = 0
 
-        for link in submissions:
+        async for link in submissions:
             post = {
                 "subreddit": str(link.subreddit),
                 "score": link.score,
@@ -96,7 +97,7 @@ class AuthorF:
             post_details[str(link.subreddit)]["num_of_posts"] += 1
             total_posts = total_posts + 1
 
-        for comment in comments:
+        async for comment in comments:
             comment_detail = {
                 "subreddit": str(comment.subreddit),
                 "score": comment.score,
@@ -121,6 +122,8 @@ class AuthorF:
             total_comments = total_comments + 1
         average_karma_post = post_karma / total_posts
         average_karma_comment = comment_karma / total_comments
+        await self.session.close()
+        await self.reddit.close()
 
         return {
             "posts": post_details,
