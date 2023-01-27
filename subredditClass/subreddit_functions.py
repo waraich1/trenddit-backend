@@ -101,7 +101,7 @@ class SubredditF:
         result = await self.convert_hot_comment_result(res)
         await self.reddit.close()
         text_result = result["text"]
-        author_freq = dict(Counter(result["author-freq"]).most_common(15))
+        author_freq = dict(Counter(result["author_comm_freq"]).most_common(15))
         author_score = dict(Counter(result["author_score"]).most_common(15))
 
         return {
@@ -149,7 +149,7 @@ class SubredditF:
         res = await self.get_freq(text)
         return {
             "text": res,
-            "author-freq": authors,
+            "author_comm_freq": authors,
             "hour_freq": hour_freq,
             "author_score": authors_by_score,
         }
