@@ -7,12 +7,14 @@ from flask import Flask, request, session, abort, jsonify, Blueprint
 
 import api.subreddit as subreddit_routes
 import api.trends as trends_routes
+import api.author as author_routes
 
 
 app = Flask(__name__)
 
 app.register_blueprint(subreddit_routes.subreddit_routes)
 app.register_blueprint(trends_routes.trends_routes)
+app.register_blueprint(author_routes.author_routes)
 
 
 CORS(app)
