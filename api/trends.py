@@ -21,5 +21,5 @@ async def subreddit_get_posts():
         ["canada", "ukraine", "australia"],
         ["War", "Russia", "Inflation", "Immigration"],
     )
-    response = jsonify(authError=False, data=res)
+    response = jsonify(authError=False, data={"data": res})
     return response
