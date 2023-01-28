@@ -15,11 +15,15 @@ trends_routes = Blueprint("trends", __name__)
 
 @trends_routes.route("/trend_posts", methods=["GET"])
 async def subreddit_get_posts():
+    trends = request.args.get('trend').split(",")
+    subreddits = request.args.get('subreddit').split(",")
+    print(trends)
+    print(subreddits)
     token = FirebaseC().get_token()
     sub = TrendsF(token)
     res = await sub.get_result(
-        ["canada", "ukraine", "australia"],
-        ["War", "Russia", "Inflation", "Immigration"],
+        subreddits,
+        trends,
     )
     response = jsonify(authError=False, data={"data": res})
     return response
