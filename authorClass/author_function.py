@@ -139,7 +139,7 @@ class AuthorF:
             "least_popular_post": least_popular_post,
             "most_popular_post": most_popular_post,
             "least_popular_comment": least_popular_comment,
-            "most_popular_comment": least_popular_comment,
+            "most_popular_comment": most_popular_comment,
             "average_karma_post": average_karma_post,
             "average_karma_comment": average_karma_comment,
             "total_karma": total_karma,
