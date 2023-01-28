@@ -36,12 +36,32 @@ class SubredditF:
     def __aiter__(self):
         return self.__wrapped__.__aiter__()
 
-    async def get_hot_posts(self, subredditName, num):
+    async def get_hot_posts(self, subredditName, num, sort, top):
+        print(num)
+        print(sort)
+        print(top)
         res = []
         result = dict()
         text_list = []
         subreddit = await self.reddit.subreddit(subredditName)
-        async for submission in subreddit.hot(limit=num):
+        submissions = None
+        if sort == "Hot":
+            submissions = subreddit.hot(limit=num)
+        elif sort == "New":
+            submissions = subreddit.new(limit=num)
+        else:
+            if top == "AllTime":
+                submissions = subreddit.top(
+                    limit=num,
+                )
+            elif top == "Week":
+                submissions = subreddit.top(limit=num, time_filter="week")
+            elif top == "Year":
+                submissions = subreddit.top(limit=num, time_filter="year")
+            else:
+                submissions = subreddit.top(limit=num, time_filter="month")
+
+        async for submission in submissions:
             # date = self.get_date(submission.created_utc)
             date = self.get_date(submission.created_utc)
             res.append(
@@ -63,12 +83,12 @@ class SubredditF:
             text_list.append(without_escape)
         author_score = dict()
         hour_counter = Counter(item["hour_created"] for item in res)
-        author_counter = Counter(item["author"] for item in res).most_common(15)
+        author_counter = Counter(item["author"] for item in res).most_common(20)
         for item in res:
             author_score[item["author"]] = author_score.get(item["author"], 0) + (
                 item["score"]
             )
-        author_score = Counter(author_score).most_common(15)
+        author_score = Counter(author_score).most_common(20)
         result["auth_freq"] = dict(author_counter)
         nsfw_counter = Counter(item["nsfw"] for item in res)
         result["nsfw_freq"] = dict(nsfw_counter)
@@ -81,7 +101,7 @@ class SubredditF:
         await self.reddit.close()
         return result
 
-    async def get_hot_comments(self, subredditName, num):
+    async def get_hot_comments(self, subredditName, num, sort, top):
         res = []
         uuids = []
         headers = {
@@ -93,7 +113,24 @@ class SubredditF:
         res = []
         uuids = []
         subreddit = await self.reddit.subreddit(subredditName)
-        async for submission in subreddit.hot(limit=num):
+        subreddit = await self.reddit.subreddit(subredditName)
+        submissions = None
+        if sort == "Hot":
+            submissions = subreddit.hot(limit=num)
+        elif sort == "New":
+            submissions = subreddit.new(limit=num)
+        else:
+            if top == "AllTime":
+                submissions = subreddit.top(
+                    limit=num,
+                )
+            elif top == "Week":
+                submissions = subreddit.top(limit=num, time_filter="week")
+            elif top == "Year":
+                submissions = subreddit.top(limit=num, time_filter="year")
+            else:
+                submissions = subreddit.top(limit=num, time_filter="month")
+        async for submission in submissions:
             url = self.make_url(submission.id, "hot", False)
             res.append(url)
 
@@ -101,8 +138,8 @@ class SubredditF:
         result = await self.convert_hot_comment_result(res)
         await self.reddit.close()
         text_result = result["text"]
-        author_freq = dict(Counter(result["author_comm_freq"]).most_common(15))
-        author_score = dict(Counter(result["author_score"]).most_common(15))
+        author_freq = dict(Counter(result["author_comm_freq"]).most_common(20))
+        author_score = dict(Counter(result["author_score"]).most_common(20))
 
         return {
             "text": text_result,

@@ -21,6 +21,7 @@ async def subreddit_get_posts():
     print(subreddits)
     token = FirebaseC().get_token()
     sub = TrendsF(token)
+    print(request.base_url)
     res = await sub.get_result(
         subreddits,
         trends,
