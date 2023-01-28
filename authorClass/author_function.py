@@ -51,6 +51,8 @@ class AuthorF:
         }
         # setup our header info, which gives reddit a brief description of our app
         headers = {"User-Agent": "Trenddit/0.0.2"}
+        name = user.name
+        created = user.created_utc
         comment_karma = user.comment_karma
         post_karma = user.link_karma
         least_popular_post = {"score": float("inf")}
@@ -126,6 +128,8 @@ class AuthorF:
         await self.reddit.close()
 
         return {
+            "name": name,
+            "cake_day": created,
             "posts": post_details,
             "comments": comment_details,
             "total_posts": total_posts,
