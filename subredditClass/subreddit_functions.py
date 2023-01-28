@@ -45,6 +45,8 @@ class SubredditF:
         text_list = []
         subreddit = await self.reddit.subreddit(subredditName)
         submissions = None
+        await subreddit.load()
+        name = str(subreddit.display_name)
         if sort == "Hot":
             submissions = subreddit.hot(limit=num)
         elif sort == "New":
@@ -89,6 +91,7 @@ class SubredditF:
                 item["score"]
             )
         author_score = Counter(author_score).most_common(20)
+        result["name"] = name
         result["auth_freq"] = dict(author_counter)
         nsfw_counter = Counter(item["nsfw"] for item in res)
         result["nsfw_freq"] = dict(nsfw_counter)
@@ -113,7 +116,8 @@ class SubredditF:
         res = []
         uuids = []
         subreddit = await self.reddit.subreddit(subredditName)
-        subreddit = await self.reddit.subreddit(subredditName)
+        await subreddit.load()
+        name = str(subreddit.display_name)
         submissions = None
         if sort == "Hot":
             submissions = subreddit.hot(limit=num)
@@ -142,6 +146,7 @@ class SubredditF:
         author_score = dict(Counter(result["author_score"]).most_common(20))
 
         return {
+            "name": name,
             "text": text_result,
             "author": author_freq,
             "hour_freq": result["hour_freq"],
