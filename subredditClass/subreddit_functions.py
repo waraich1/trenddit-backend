@@ -63,12 +63,12 @@ class SubredditF:
             text_list.append(without_escape)
         author_score = dict()
         hour_counter = Counter(item["hour_created"] for item in res)
-        author_counter = Counter(item["author"] for item in res).most_common(15)
+        author_counter = Counter(item["author"] for item in res).most_common(20)
         for item in res:
             author_score[item["author"]] = author_score.get(item["author"], 0) + (
                 item["score"]
             )
-        author_score = Counter(author_score).most_common(15)
+        author_score = Counter(author_score).most_common(20)
         result["auth_freq"] = dict(author_counter)
         nsfw_counter = Counter(item["nsfw"] for item in res)
         result["nsfw_freq"] = dict(nsfw_counter)
@@ -101,8 +101,8 @@ class SubredditF:
         result = await self.convert_hot_comment_result(res)
         await self.reddit.close()
         text_result = result["text"]
-        author_freq = dict(Counter(result["author_comm_freq"]).most_common(15))
-        author_score = dict(Counter(result["author_score"]).most_common(15))
+        author_freq = dict(Counter(result["author_comm_freq"]).most_common(20))
+        author_score = dict(Counter(result["author_score"]).most_common(20))
 
         return {
             "text": text_result,
