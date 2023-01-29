@@ -14,9 +14,10 @@ author_routes = Blueprint("author", __name__)
 
 
 @author_routes.route("/author_details", methods=["GET"])
-async def subreddit_get_posts():
+async def author_get_details():
+    username = request.args.get("user")
     token = FirebaseC().get_token()
     user = AuthorF(token)
-    res = await user.get_author_details()
+    res = await user.get_author_details(username)
     response = jsonify(authError=False, data={"data": res})
     return response
