@@ -59,7 +59,7 @@ class AuthorF:
         least_popular_comment = {"score": float("inf")}
         most_popular_comment = {"score": float("-inf")}
         total_karma_req = requests.get(
-            f"https://www.reddit.com/user/{self.username}/about.json",
+            f"https://www.reddit.com/user/username/about.json",
             auth=auth,
             headers=headers,
             data=data,
