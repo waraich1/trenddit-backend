@@ -30,7 +30,6 @@ class AuthorF:
             password=environ.get("PASSWORD"),
         )
 
-        self.username = "tog__life"
         self.token = token
         self.reddit.read_only = True
         self.session = ClientSession()
