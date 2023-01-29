@@ -30,7 +30,6 @@ class AuthorF:
             password=environ.get("PASSWORD"),
         )
 
-        self.username = "tog__life"
         self.token = token
         self.reddit.read_only = True
         self.session = ClientSession()
@@ -38,8 +37,8 @@ class AuthorF:
     def __aiter__(self):
         return self.__wrapped__.__aiter__()
 
-    async def get_author_details(self):
-        user = await self.reddit.redditor("tog__life", fetch=True)
+    async def get_author_details(self, username):
+        user = await self.reddit.redditor(username, fetch=True)
         auth = requests.auth.HTTPBasicAuth(
             environ.get("CLIENT_ID"), environ.get("SECRET_ID")
         )
