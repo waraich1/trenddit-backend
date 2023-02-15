@@ -36,22 +36,31 @@ class TrendsF:
 
     async def get_trend_posts(self, subredditName, query):
         result = []
-        subreddit = await self.reddit.subreddit(subredditName)
-        async for submission in subreddit.search(query, sort="hot", time_filter="year"):
-            date = self.get_date(submission.created_utc)
-            res_object = {
-                "author": str(submission.author),
-                "date": str(date.day) + "/" + str(date.month) + "/" + str(date.year),
-                "id": submission.id,
-                "name": submission.name,
-                "over_18": submission.over_18,
-                "num_commenta": submission.num_comments,
-                "upvote_ratio": submission.upvote_ratio,
-                "subreddit": subredditName,
-                "query": query
-            }
-            result.append(res_object)
-
+        try:
+            subreddit = await self.reddit.subreddit(subredditName)
+            async for submission in subreddit.search(
+                query, sort="hot", time_filter="year"
+            ):
+                date = self.get_date(submission.created_utc)
+                res_object = {
+                    "author": str(submission.author),
+                    "date": str(date.day)
+                    + "/"
+                    + str(date.month)
+                    + "/"
+                    + str(date.year),
+                    "id": submission.id,
+                    "name": submission.name,
+                    "over_18": submission.over_18,
+                    "num_commenta": submission.num_comments,
+                    "upvote_ratio": submission.upvote_ratio,
+                    "subreddit": subredditName,
+                    "query": query,
+                }
+                result.append(res_object)
+        except:
+            print(f"Api call failed. Subreddit: {subredditName} does not exist")
+            result = [False, subredditName]
         return result
 
     async def get_result(self, subreddits, keywords):
@@ -60,12 +69,20 @@ class TrendsF:
             for j in keywords:
                 arguments.append((i, j))
 
-        result = await asyncio.gather(
+        results = await asyncio.gather(
             *[self.get_trend_posts(x, y) for x, y in arguments]
         )
         await self.reddit.close()
         await self.session.close()
-        return list(itertools.chain(*result))
+        filteredResults = list()
+        for result in results:
+            if len(result) == 2 and result[0] == False:
+                print("Wrong result")
+                # raise exception
+                raise ValueError(f"Subreddit does not exist {result[1]}")
+            else:
+                filteredResults.append(result)
+        return list(itertools.chain(*filteredResults))
 
     def get_date(self, date):
         converted_date = datetime.fromtimestamp(date)
