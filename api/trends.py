@@ -15,8 +15,8 @@ trends_routes = Blueprint("trends", __name__)
 
 @trends_routes.route("/trend_posts", methods=["GET"])
 async def subreddit_get_posts():
-    trends = request.args.get('trend').split(",")
-    subreddits = request.args.get('subreddit').split(",")
+    trends = request.args.get("trend").split(",")
+    subreddits = request.args.get("subreddit").split(",")
     print(trends)
     print(subreddits)
     token = FirebaseC().get_token()

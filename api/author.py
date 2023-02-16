@@ -15,9 +15,19 @@ author_routes = Blueprint("author", __name__)
 
 @author_routes.route("/author_details", methods=["GET"])
 async def author_get_details():
-    username = request.args.get("user")
-    token = FirebaseC().get_token()
-    user = AuthorF(token)
-    res = await user.get_author_details(username)
-    response = jsonify(authError=False, data={"data": res})
+    try:
+        username = request.args.get("user")
+        token = FirebaseC().get_token()
+        user = AuthorF(token)
+        res = await user.get_author_details(username)
+        response = jsonify(authError=False, data={"data": res})
+
+    except Exception as e:
+        response = jsonify(
+            data={
+                "success": False,
+                "errorCode": "Invalid username " + username + " or request: " + str(e),
+            }
+        )
+        response.status_code = 400
     return response

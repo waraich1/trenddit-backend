@@ -121,8 +121,17 @@ class AuthorF:
             comment_details[str(comment.subreddit)]["score"] += comment.score
             comment_details[str(comment.subreddit)]["num_of_comments"] += 1
             total_comments = total_comments + 1
-        average_karma_post = post_karma / total_posts
-        average_karma_comment = comment_karma / total_comments
+
+            if total_comments > 0:
+                average_karma_post = post_karma / total_posts
+            else:
+                average_karma_post = 0
+
+            if total_posts > 0:
+                average_karma_comment = comment_karma / total_comments
+            else:
+                average_karma_comment = 0
+
         await self.session.close()
         await self.reddit.close()
 
