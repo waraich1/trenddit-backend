@@ -73,6 +73,8 @@ class AuthorF:
         comment_details = dict()
         total_comments = 0
         total_posts = 0
+        average_karma_comment = 0
+        average_karma_post = 0
 
         async for link in submissions:
             post = {
@@ -81,6 +83,7 @@ class AuthorF:
                 "num_comments": link.num_comments,
                 "title": link.title,
             }
+
             if link.score < least_popular_post["score"]:
                 least_popular_post = post
 
@@ -97,6 +100,12 @@ class AuthorF:
             post_details[str(link.subreddit)]["score"] += link.score
             post_details[str(link.subreddit)]["num_of_posts"] += 1
             total_posts = total_posts + 1
+
+        if least_popular_post["score"] == float("inf"):
+            least_popular_post["score"] = 0
+
+        if most_popular_post["score"] == float("-inf"):
+            most_popular_post["score"] = 0
 
         async for comment in comments:
             comment_detail = {
@@ -122,15 +131,17 @@ class AuthorF:
             comment_details[str(comment.subreddit)]["num_of_comments"] += 1
             total_comments = total_comments + 1
 
-            if total_comments > 0:
-                average_karma_post = post_karma / total_posts
-            else:
-                average_karma_post = 0
-
             if total_posts > 0:
+                average_karma_post = post_karma / total_posts
+
+            if total_comments > 0:
                 average_karma_comment = comment_karma / total_comments
-            else:
-                average_karma_comment = 0
+
+        if least_popular_comment["score"] == float("inf"):
+            least_popular_comment["score"] = 0
+
+        if most_popular_comment["score"] == float("-inf"):
+            most_popular_comment["score"] = 0
 
         await self.session.close()
         await self.reddit.close()
