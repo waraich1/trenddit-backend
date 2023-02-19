@@ -35,9 +35,11 @@ class TrendsF:
         return self.__wrapped__.__aiter__()
 
     async def get_trend_posts(self, subredditName, query):
+        # print("GetTrendPost Called", subredditName)
         result = []
         try:
             subreddit = await self.reddit.subreddit(subredditName)
+            queryResults = 0
             async for submission in subreddit.search(
                 query, sort="hot", time_filter="year"
             ):
@@ -57,17 +59,22 @@ class TrendsF:
                     "subreddit": subredditName,
                     "query": query,
                 }
+                queryResults += 1
                 result.append(res_object)
+            if queryResults == 0:
+                result = [False, 0, subredditName, query]
         except:
             print(f"Api call failed. Subreddit: {subredditName} does not exist")
-            result = [False, subredditName]
+            result = [False, 1, subredditName, query]
         return result
 
     async def get_result(self, subreddits, keywords):
+        # print("GetResult Called")
         arguments = []
         for i in subreddits:
             for j in keywords:
                 arguments.append((i, j))
+        print(arguments)
 
         results = await asyncio.gather(
             *[self.get_trend_posts(x, y) for x, y in arguments]
@@ -76,10 +83,43 @@ class TrendsF:
         await self.session.close()
         filteredResults = list()
         for result in results:
-            if len(result) == 2 and result[0] == False:
+            if len(result) == 4 and result[0] == False:
                 print("Wrong result")
                 # raise exception
-                raise ValueError(f"Subreddit does not exist {result[1]}")
+                # raise ValueError(f"Subreddit does not exist {result[1]}")
+                # date = self.get_date()
+                if result[1] == 1:
+                    filteredResults.append(
+                        [
+                            {
+                                # "author": str("0"),
+                                # "date": "0" + "/" + "00" + "/" + "0000",
+                                # "id": "0",
+                                # "name": "abc",
+                                # "over_18": 0,
+                                # "num_commenta": 0,
+                                # "upvote_ratio": 0,
+                                "subreddit": f"{result[2]} does not exist",
+                                "query": result[3],
+                            }
+                        ]
+                    )
+                elif result[1] == 0:
+                    filteredResults.append(
+                        [
+                            {
+                                # "author": str("0"),
+                                # "date": "0" + "/" + "00" + "/" + "0000",
+                                # "id": "0",
+                                # "name": "abc",
+                                # "over_18": 0,
+                                # "num_commenta": 0,
+                                # "upvote_ratio": 0,
+                                "subreddit": f"{result[2]} exists",
+                                "query": f"No results found for query: {result[3]}",
+                            }
+                        ]
+                    )
             else:
                 filteredResults.append(result)
         return list(itertools.chain(*filteredResults))
