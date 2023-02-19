@@ -19,9 +19,9 @@ import itertools
 
 
 class SubredditF:
-    def __init__(self, token) -> None:
+    def __init__(self, toke, service) -> None:
 
-        self.reddit = asyncpraw.Reddit(
+        self.reddit = service or asyncpraw.Reddit(
             client_id=environ.get("CLIENT_ID"),
             client_secret=environ.get("SECRET_ID"),
             user_agent="Trenddit/0.0.2",

@@ -1,5 +1,4 @@
 from crypt import methods
-import imp
 import logging
 import json
 import os
